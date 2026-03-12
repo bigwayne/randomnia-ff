@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Randomnia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Token defaults — overridden at runtime by applyColors() ── */
+:root {
+  --primary:    #111111;
+  --secondary:  #1a1a1a;
+  --background: #0d0d0d;
+  --text:       #f0f0f0;
+  --accent:     #c04040;
+
+  /* Derived — set by applyColors() from --text and --accent */
+  --ink:              var(--text);
+  --ink-secondary:    rgba(240, 240, 240, 0.58);
+  --ink-muted:        rgba(240, 240, 240, 0.32);
+  --border-subtle:    rgba(240, 240, 240, 0.05);
+  --border-standard:  rgba(240, 240, 240, 0.09);
+  --border-emphasis:  rgba(240, 240, 240, 0.18);
+  --brand:            var(--accent);
+  --brand-glow:       rgba(192, 64, 64, 0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--background);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ── */
+header {
+  background: var(--primary);
+  border-bottom: 1px solid var(--border-standard);
+  padding: 0.875rem 1.5rem;
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+#logo { height: 1.75rem; width: auto; display: none; }
+#site-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+#site-description {
+  font-size: 0.8rem;
+  color: var(--ink-secondary);
+  margin-top: 0.1875rem;
+  line-height: 1.4;
+}
+
+/* ── Main ── */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ── Player ── */
+.player-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-standard);
+  margin-bottom: 0.75rem;
+}
+.player-wrap iframe,
+.player-wrap > div { width: 100%; height: 100%; border: none; }
+.player-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0.625rem;
+}
+.player-placeholder-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-standard);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-muted);
+}
+.player-placeholder p {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+/* ── Action row ── */
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+#now-playing {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  transition: color 0.2s;
+}
+#now-playing.active { color: var(--brand); }
+#btn-pick {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5625rem 1.125rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+}
+#btn-pick:hover { opacity: 0.85; }
+#btn-pick:active { transform: scale(0.97); }
+
+/* ── Playlists ── */
+.playlists-section { margin-bottom: 1.5rem; }
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.5rem;
+}
+.playlist-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.pl-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3125rem 0.6875rem;
+  background: var(--secondary);
+  border-radius: 100px;
+  cursor: pointer;
+  border: 1px solid var(--border-standard);
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+  user-select: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.pl-toggle input { display: none; }
+.pl-toggle:has(input:checked) {
+  border-color: var(--brand);
+  color: var(--ink);
+  background: var(--brand-glow);
+}
+.pl-toggle:hover { border-color: var(--border-emphasis); }
+.pl-toggle:has(input:checked):hover { border-color: var(--brand); }
+
+/* ── History ── */
+.history-section { margin-bottom: 2rem; }
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+#btn-clear {
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.1875rem 0.375rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+#btn-clear:hover { color: var(--ink-secondary); }
+.history-list {
+  list-style: none;
+  background: var(--secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  max-height: 280px;
+  overflow-y: auto;
+}
+.history-list::-webkit-scrollbar { width: 3px; }
+.history-list::-webkit-scrollbar-track { background: transparent; }
+.history-list::-webkit-scrollbar-thumb { background: var(--border-standard); border-radius: 2px; }
+.history-list li {
+  padding: 0.5625rem 0.875rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.8125rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+.history-list li:last-child { border-bottom: none; }
+.history-list a {
+  color: var(--ink-secondary);
+  text-decoration: none;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.1s;
+}
+.history-list a:hover { color: var(--ink); }
+.history-list .ts {
+  color: var(--ink-muted);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.history-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+/* ── Footer ── */
+footer {
+  background: var(--primary);
+  border-top: 1px solid var(--border-subtle);
+  padding: 0.875rem 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+footer a { color: var(--brand); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(1.5rem);
+  background: var(--secondary);
+  color: var(--ink);
+  border: 1px solid var(--border-standard);
+  padding: 0.4375rem 1rem;
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 999;
+  transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (min-width: 600px) {
+  header { padding: 1rem 2rem; }
+  main { padding: 2rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <img id="logo" src="" alt="">
+    <div>
+      <h1 id="site-title">Randomnia</h1>
+      <p id="site-description"></p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="player-wrap">
+    <div id="yt-player">
+      <div class="player-placeholder">
+        <div class="player-placeholder-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
+            <polygon points="6,3 15,9 6,15"/>
+          </svg>
+        </div>
+        <p>Select playlists and pick a random video</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <div id="now-playing">Pick a random video to begin</div>
+    <button id="btn-pick">Pick Random</button>
+  </div>
+
+  <div class="playlists-section">
+    <div class="section-label">Playlists</div>
+    <div class="playlist-grid" id="playlist-grid"></div>
+  </div>
+
+  <div class="history-section">
+    <div class="section-header">
+      <div class="section-label">History</div>
+      <button id="btn-clear">Clear</button>
+    </div>
+    <ul class="history-list" id="history-list"></ul>
+  </div>
+</main>
+
+<footer id="footer"></footer>
+<div class="toast" id="toast"></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+var cfg = {};
+var ytPlayer = null;
+var ytReady = false;
+var videoCache = {};
+var pendingAutoplay = false;
+
+window.onYouTubeIframeAPIReady = function() {
+  ytReady = true;
+  if (pendingAutoplay) {
+    pendingAutoplay = false;
+    pickRandom();
+  }
+};
+(function() {
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.ENDED) {
+    pickRandom();
+  }
+}
+
+function hexToRgb(hex) {
+  var r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : null;
+}
+
+function applyColors(colors) {
+  var root = document.documentElement;
+  Object.entries(colors).forEach(function(kv) {
+    if (kv[1]) root.style.setProperty('--' + kv[0], kv[1]);
+  });
+  if (colors.text) {
+    var t = hexToRgb(colors.text);
+    if (t) {
+      var c = t.r + ',' + t.g + ',' + t.b;
+      root.style.setProperty('--ink-secondary',   'rgba(' + c + ',0.58)');
+      root.style.setProperty('--ink-muted',        'rgba(' + c + ',0.32)');
+      root.style.setProperty('--border-subtle',    'rgba(' + c + ',0.05)');
+      root.style.setProperty('--border-standard',  'rgba(' + c + ',0.09)');
+      root.style.setProperty('--border-emphasis',  'rgba(' + c + ',0.18)');
+    }
+  }
+  if (colors.accent) {
+    var a = hexToRgb(colors.accent);
+    if (a) {
+      root.style.setProperty('--brand-glow', 'rgba(' + a.r + ',' + a.g + ',' + a.b + ',0.12)');
+    }
+  }
+}
+
+function renderHeader(c) {
+  document.title = c.title || 'Randomnia';
+  document.getElementById('site-title').textContent = c.title || 'Randomnia';
+  if (c.logo) {
+    var img = document.getElementById('logo');
+    img.src = c.logo; img.alt = c.title || '';
+    img.style.display = 'inline';
+  }
+  var desc = document.getElementById('site-description');
+  if (c.description) {
+    desc.textContent = c.description;
+  } else {
+    desc.style.display = 'none';
+  }
+}
+
+function renderPlaylists(playlists) {
+  var grid = document.getElementById('playlist-grid');
+  grid.innerHTML = '';
+  playlists.forEach(function(pl) {
+    var lbl = document.createElement('label');
+    lbl.className = 'pl-toggle';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'pl_' + pl.id;
+    cb.checked = true;
+    var span = document.createElement('span');
+    span.textContent = pl.name;
+    lbl.appendChild(cb);
+    lbl.appendChild(span);
+    grid.appendChild(lbl);
+    cb.addEventListener('change', function() {
+      if (!cb.checked) localStorage.removeItem('seen_' + pl.id);
+      fetchChecked();
+    });
+  });
+}
+
+function renderFooter(author) {
+  var footer = document.getElementById('footer');
+  var html = '';
+  if (author && author.name) {
+    html += '<a href="' + (author.url || '#') + '" target="_blank" rel="noopener">' + author.name + '</a> &middot; ';
+  }
+  html += 'Powered by <a href="https://github.com/waynesmith/randomnia" target="_blank" rel="noopener">Randomnia</a>';
+  footer.innerHTML = html;
+}
+
+function getCheckedIds() {
+  return (cfg.playlists || []).filter(function(pl) {
+    var cb = document.getElementById('pl_' + pl.id);
+    return cb && cb.checked;
+  }).map(function(pl) { return pl.id; });
+}
+
+function getSeen(pid) { return JSON.parse(localStorage.getItem('seen_' + pid) || '[]'); }
+function addSeen(pid, vid) {
+  var seen = getSeen(pid);
+  if (!seen.includes(vid)) seen.push(vid);
+  localStorage.setItem('seen_' + pid, JSON.stringify(seen));
+}
+function clearSeen(pid) { localStorage.removeItem('seen_' + pid); }
+function getHistory() { return JSON.parse(localStorage.getItem('history') || '[]'); }
+function addHistory(entry) {
+  var hist = getHistory();
+  hist.unshift(entry);
+  localStorage.setItem('history', JSON.stringify(hist.slice(0, 200)));
+}
+
+function renderHistory() {
+  var hist = getHistory();
+  var list = document.getElementById('history-list');
+  if (!hist.length) {
+    list.innerHTML = '<li class="history-empty">No videos watched yet</li>';
+    return;
+  }
+  list.innerHTML = '';
+  hist.forEach(function(entry) {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = 'https://www.youtube.com/watch?v=' + entry.id;
+    a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = entry.title;
+    var ts = document.createElement('span');
+    ts.className = 'ts';
+    ts.textContent = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    li.appendChild(a); li.appendChild(ts);
+    $(li).hide();
+    list.appendChild(li);
+    $(li).fadeIn(250);
+  });
+}
+
+async function fetchPlaylistVideos(pid) {
+  var cacheKey = 'videos_' + pid;
+  var cached = localStorage.getItem(cacheKey);
+  if (cached) { videoCache[pid] = JSON.parse(cached); return; }
+  if (!cfg.youtubeApiKey || cfg.youtubeApiKey === 'YOUR_YOUTUBE_API_KEY_HERE') {
+    showToast('Add your YouTube API key to config.json');
+    return;
+  }
+  var base = 'https://www.googleapis.com/youtube/v3/playlistItems';
+  var items = [], pageToken = '';
+  try {
+    do {
+      var url = base + '?part=snippet&maxResults=50&playlistId=' + pid + '&key=' + cfg.youtubeApiKey + (pageToken ? '&pageToken=' + pageToken : '');
+      var res = await fetch(url);
+      if (!res.ok) throw new Error('API ' + res.status);
+      var data = await res.json();
+      (data.items || []).forEach(function(item) {
+        if (item.snippet.resourceId.kind === 'youtube#video') {
+          items.push({ id: item.snippet.resourceId.videoId, title: item.snippet.title });
+        }
+      });
+      pageToken = data.nextPageToken || '';
+    } while (pageToken);
+    videoCache[pid] = items;
+    localStorage.setItem(cacheKey, JSON.stringify(items));
+  } catch(e) {
+    showToast('Error loading playlist: ' + e.message);
+  }
+}
+
+async function fetchChecked() {
+  var ids = getCheckedIds();
+  var toFetch = ids.filter(function(id) { return !videoCache[id]; });
+  await Promise.all(toFetch.map(fetchPlaylistVideos));
+}
+
+async function pickRandom() {
+  await fetchChecked();
+  var ids = getCheckedIds();
+  if (!ids.length) { showToast('Select at least one playlist'); return; }
+  var pool = [];
+  ids.forEach(function(pid) {
+    var all = videoCache[pid] || [];
+    var seen = getSeen(pid);
+    all.filter(function(v) { return !seen.includes(v.id); }).forEach(function(v) {
+      pool.push(Object.assign({}, v, { playlistId: pid }));
+    });
+  });
+  if (!pool.length) {
+    showToast('All videos watched — resetting!');
+    ids.forEach(clearSeen);
+    ids.forEach(function(pid) {
+      (videoCache[pid] || []).forEach(function(v) {
+        pool.push(Object.assign({}, v, { playlistId: pid }));
+      });
+    });
+  }
+  if (!pool.length) { showToast('No videos found in selected playlists'); return; }
+  var pick = pool[Math.floor(Math.random() * pool.length)];
+  addSeen(pick.playlistId, pick.id);
+  addHistory({ id: pick.id, title: pick.title, timestamp: Date.now() });
+  loadVideo(pick);
+  renderHistory();
+}
+
+function loadVideo(video) {
+  var np = document.getElementById('now-playing');
+  np.textContent = video.title;
+  np.classList.add('active');
+  if (ytReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+    ytPlayer.loadVideoById(video.id);
+  } else if (ytReady) {
+    var container = document.getElementById('yt-player');
+    if (!container) {
+      var wrap = document.querySelector('.player-wrap');
+      wrap.innerHTML = '<div id="yt-player"></div>';
+    }
+    ytPlayer = new YT.Player('yt-player', {
+      width: '100%',
+      height: '100%',
+      videoId: video.id,
+      playerVars: { autoplay: 1, rel: 0 },
+      events: {
+        onStateChange: onPlayerStateChange
+      }
+    });
+  } else {
+    var wrap = document.querySelector('.player-wrap');
+    wrap.innerHTML = '<iframe src="https://www.youtube.com/embed/' + video.id + '?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+  }
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+
+async function init() {
+  try {
+    var res = await fetch('./config.json');
+    if (!res.ok) throw new Error('not found');
+    cfg = await res.json();
+  } catch(e) {
+    showToast('config.json not found — run init.sh first');
+    cfg = { title: 'Randomnia', playlists: [], colors: {} };
+  }
+  if (cfg.colors) applyColors(cfg.colors);
+  renderHeader(cfg);
+  renderPlaylists(cfg.playlists || []);
+  renderFooter(cfg.author);
+  renderHistory();
+  await fetchChecked();
+  if (ytReady) {
+    pickRandom();
+  } else {
+    pendingAutoplay = true;
+  }
+}
+
+document.getElementById('btn-pick').addEventListener('click', pickRandom);
+document.getElementById('btn-clear').addEventListener('click', function() {
+  getCheckedIds().forEach(clearSeen);
+  localStorage.removeItem('history');
+  renderHistory();
+  showToast('History cleared');
+});
+
+init();
+</script>
+</body>
+</html>

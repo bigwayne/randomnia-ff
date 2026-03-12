@@ -1,0 +1,22 @@
+{
+  "title": "Sleepy Crime",
+  "description": "Random true crime videos for your late-night listening pleasure.",
+  "logo": "",
+  "youtubeApiKey": "YOUR_YOUTUBE_API_KEY_HERE",
+  "author": {
+    "name": "Your Name",
+    "url": "https://yoursite.com"
+  },
+  "colors": {
+    "primary":    "#131108",
+    "secondary":  "#1e1a12",
+    "background": "#0d0b08",
+    "text":       "#ece6d8",
+    "accent":     "#c4491a"
+  },
+  "playlists": [
+    { "id": "PLxxxxxxxxxxxxxxxxxxxx", "name": "Murder Mysteries" },
+    { "id": "PLyyyyyyyyyyyyyyyyyy",   "name": "Cold Cases" },
+    { "id": "PLzzzzzzzzzzzzzzzzzz",   "name": "Unsolved" }
+  ]
+}

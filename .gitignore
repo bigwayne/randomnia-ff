@@ -142,4 +142,4 @@ vite.config.ts.timestamp-*
 .**
 
 # Local config (contains API key)
-config.json
+# config.json

@@ -1,0 +1,33 @@
+{
+  "title": "Forensic Files",
+  "description": "Random Forensic Files videos for your late-night listening pleasure.",
+  "logo": "",
+  "youtubeApiKey": "AIzaSyCfvnhpbHK4GEFGDbTcmYfHY-hxpryYrj4",
+  "author": {
+    "name": "Wayne Smith",
+    "url": "https://github.com/bigwayne"
+  },
+  "colors": {
+    "primary": "#1a1a2e",
+    "secondary": "#16213e",
+    "background": "#0f0e17",
+    "text": "#fffffe",
+    "accent": "#e94560"
+  },
+  "playlists": [
+    { "id": "PLC4mqmKvz1IYhridkGQXt61CiD1-DjJw9", "name": "Forensic Files (Season 1 HD)" },
+    { "id": "PLC4mqmKvz1IZWajIl9A4dG84Q2Auk1IYu", "name": "Forensic Files (Season 2 HD)" },
+    { "id": "PLC4mqmKvz1IYhzbl-9hJxqM0izfRpZ9Lo", "name": "Forensic Files (Season 3 HD)" },
+    { "id": "PLC4mqmKvz1IbYSwZcYH5ZDD-I9LrpF3Jf", "name": "Forensic Files (Season 4 HD)" },
+    { "id": "PLC4mqmKvz1IZfI7ioDqO63CQZ9vnPpjP_", "name": "Forensic Files (Season 5)" },
+    { "id": "PLC4mqmKvz1IbGw_iy8xPISKy2BMsXeXHc", "name": "Forensic Files (Season 6)" },
+    { "id": "PLC4mqmKvz1IbSwY-t8uYz1m6kx4d1KR8E", "name": "Forensic Files (Season 7)" },
+    { "id": "PLC4mqmKvz1IbdnLKfCt8--pOV0xEpMIP5", "name": "Forensic Files (Season 8)" },
+    { "id": "PLC4mqmKvz1IY0qnKUmUsi10rLQQX6Wbi3", "name": "Forensic Files (Season 9)" },
+    { "id": "PLC4mqmKvz1IZGbtqZynVLcjg4fW52Va1M", "name": "Forensic Files (Season 10)" },
+    { "id": "PLC4mqmKvz1IZpgpEvYBjDdm4odRNi-K-0", "name": "Forensic Files (Season 11)" },
+    { "id": "PLC4mqmKvz1IZCJuxKJkdzpWupAxkvP4Lc", "name": "Forensic Files (Season 12)" },
+    { "id": "PLC4mqmKvz1IaKw2803FU5xDXfM7sH99XC", "name": "Forensic Files (Season 13 HD)" },
+    { "id": "PLC4mqmKvz1IaLgUXzeyoFx4Ta5L6emCWl", "name": "Forensic Files (Season 14 HD)" }
+  ]
+}
